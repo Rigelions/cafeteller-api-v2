@@ -1,0 +1,34 @@
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Executables
+*.exe
+*.out
+
+# Go binary
+/bin/
+
+# Go test cache and coverage files
+*.test
+*.test.out
+*.cover
+
+# Go build cache
+/.cache/
+
+# Go module dependencies
+/go.sum
+/go.mod
+
+# IDE-specific files
+.idea/
+.vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# env file
+.env
