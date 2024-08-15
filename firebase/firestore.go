@@ -48,6 +48,9 @@ func GetFirestoreClient(c *gin.Context) *firestore.Client {
 // CloseFirestoreClient closes the Firestore client
 func CloseFirestoreClient() {
 	if FirestoreClient != nil {
-		FirestoreClient.Close()
+		err := FirestoreClient.Close()
+		if err != nil {
+			return
+		}
 	}
 }

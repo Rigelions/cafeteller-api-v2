@@ -27,5 +27,8 @@ func main() {
 		port = "8080"
 	}
 
-	r.Run(":" + port)
+	err = r.Run(":" + port)
+	if err != nil {
+		return
+	}
 }

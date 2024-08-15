@@ -29,6 +29,9 @@ func SetupRouter() *gin.Engine {
 
 	r.GET("/hello", handler.HelloWorld)
 
+	r.GET("/banner", handler.GetRecommendReviews)
+
+	r.GET("/reviews", handler.GetReviews)
 	r.GET("/reviews/:id", handler.GetReviewByID)
 
 	r.GET("/get-similar-cafe", handler.GetSimilarCafe)

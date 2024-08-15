@@ -30,6 +30,11 @@ Cafeteller is a review blog platform for coffee enthusiasts, powered by a robust
     go mod download
     ```
 4. Set up your database and configure the connection in the `.env` file.
+   ```dotenv
+   GO_ENV=
+   PROJECT_ID=
+   SERVICE_ACCOUNT_KEY_PATH=
+   ```
 
 ### Running the Application
 

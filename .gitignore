@@ -34,3 +34,5 @@ Thumbs.db
 .env
 
 service-account-key.json
+
+/tmp

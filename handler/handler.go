@@ -2,13 +2,14 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"sort"
 	"strings"
 
 	"cafeteller-api/firebase"
 
-	cloud_firestore "cloud.google.com/go/firestore"
+	cloudFirestore "cloud.google.com/go/firestore"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/api/iterator"
@@ -16,40 +17,8 @@ import (
 
 func HelloWorld(c *gin.Context) {
 	c.JSON(200, gin.H{
-		"message": "Hello HHH",
+		"message": "Hello test live",
 	})
-}
-
-func GetReviewByID(c *gin.Context) {
-	ctx := context.Background()
-	id := c.Param("id")
-
-	// Use Firestore client
-	client := firebase.GetFirestoreClient(c)
-
-	dsnap, err := client.Collection("reviews").Doc(id).Get(ctx)
-
-	if err != nil {
-		//  show bad request not found
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Review not found",
-		})
-		return
-	}
-
-	data := dsnap.Data()
-
-	cafe_snap, err := data["cafe"].(*cloud_firestore.DocumentRef).Get(ctx)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Cafe not found",
-		})
-		return
-	}
-
-	data["cafe"] = cafe_snap.Data()
-
-	c.JSON(http.StatusOK, data)
 }
 
 // GetSimilarCafe handler function
@@ -76,7 +45,7 @@ func GetSimilarCafe(c *gin.Context) {
 
 	for {
 		doc, err := iter.Next()
-		if err == iterator.Done {
+		if errors.Is(err, iterator.Done) {
 			break
 		}
 		if err != nil {
@@ -112,7 +81,7 @@ func GetSimilarCafe(c *gin.Context) {
 
 	// Map the reviews with their corresponding cafes
 	for _, review := range reviews {
-		if cafe, exists := cafeMap[review["cafe"].(*cloud_firestore.DocumentRef).ID]; exists {
+		if cafe, exists := cafeMap[review["cafe"].(*cloudFirestore.DocumentRef).ID]; exists {
 			review["cafe"] = cafe
 		}
 	}
@@ -145,9 +114,9 @@ func extractCafeIDs(cafes []map[string]interface{}) []string {
 }
 
 // Function to get reviews for specific cafes
-func getReviewsForCafes(ctx context.Context, client *cloud_firestore.Client, cafeIDs []string) ([]map[string]interface{}, error) {
+func getReviewsForCafes(ctx context.Context, client *cloudFirestore.Client, cafeIDs []string) ([]map[string]interface{}, error) {
 	reviews := []map[string]interface{}{}
-	var cafeRefs []*cloud_firestore.DocumentRef
+	var cafeRefs []*cloudFirestore.DocumentRef
 
 	for _, id := range cafeIDs {
 		cafeRefs = append(cafeRefs, client.Collection("cafes").Doc(id))
@@ -161,7 +130,7 @@ func getReviewsForCafes(ctx context.Context, client *cloud_firestore.Client, caf
 
 	for {
 		doc, err := iter.Next()
-		if err == iterator.Done {
+		if errors.Is(err, iterator.Done) {
 			break
 		}
 		if err != nil {
