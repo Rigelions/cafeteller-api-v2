@@ -27,7 +27,7 @@ func SetupRouter() *gin.Engine {
 	// Apply the rate limiter middleware to the router
 	r.Use(tollbooth_gin.LimitHandler(limiter))
 
-	r.GET("/hello", handler.HelloWorld)
+	r.GET("/health", handler.HealthCheck)
 
 	r.GET("/banner", handler.GetRecommendReviews)
 

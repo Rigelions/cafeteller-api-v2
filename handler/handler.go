@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 
@@ -15,9 +16,23 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func HelloWorld(c *gin.Context) {
+func HealthCheck(c *gin.Context) {
+	environment := os.Getenv("GO_ENV")
+	commitHash := os.Getenv("COMMIT_HASH")
+
+	// commit hash first 7 digits
+	if len(commitHash) > 7 {
+		commitHash = commitHash[:7]
+	}
+
+	// if commit hash is empty, set it to "local"
+	if commitHash == "" {
+		commitHash = "local"
+	}
+
 	c.JSON(200, gin.H{
-		"message": "Hello test live",
+		"environment": environment,
+		"version":     commitHash,
 	})
 }
 
