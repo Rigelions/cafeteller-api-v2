@@ -11,6 +11,17 @@ import (
 	"github.com/didip/tollbooth_gin"
 )
 
+func RegisterRoutes(r *gin.Engine) {
+	r.GET("/health", handler.HealthCheck)
+
+	r.GET("/banner", handler.GetRecommendReviews)
+
+	r.GET("/get-similar-cafe", handler.GetSimilarCafe)
+
+	setupReviewRoute(r)
+	setupAuthRoute(r)
+}
+
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
@@ -27,13 +38,6 @@ func SetupRouter() *gin.Engine {
 	// Apply the rate limiter middleware to the router
 	r.Use(tollbooth_gin.LimitHandler(limiter))
 
-	r.GET("/health", handler.HealthCheck)
-
-	r.GET("/banner", handler.GetRecommendReviews)
-
-	r.GET("/reviews", handler.GetReviews)
-	r.GET("/reviews/:id", handler.GetReviewByID)
-
-	r.GET("/get-similar-cafe", handler.GetSimilarCafe)
+	RegisterRoutes(r)
 	return r
 }
