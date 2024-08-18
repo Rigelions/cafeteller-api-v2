@@ -1,21 +1,23 @@
 package handler
 
 import (
+	"cafeteller-api/firebase"
 	"context"
 	"encoding/json"
-	firebase "firebase.google.com/go"
 	"github.com/gin-gonic/gin"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
 type InstagramResponse struct {
-	AccessToken string `json:"access_token"`
-	UserID      string `json:"user_id"`
+	AccessToken string   `json:"access_token"`
+	UserID      int      `json:"user_id"`
+	Permission  []string `json:"permissions"`
 }
 
 func Auth(c *gin.Context) {
@@ -65,6 +67,12 @@ func Auth(c *gin.Context) {
 		return
 	}
 
+	// if body.code == 400 throw 500 error
+	if resp.StatusCode == 400 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get access token from Instagram"})
+		return
+	}
+
 	var igResponse InstagramResponse
 	if err := json.Unmarshal(body, &igResponse); err != nil {
 		log.Println("Error unmarshalling response:", err)
@@ -72,26 +80,13 @@ func Auth(c *gin.Context) {
 		return
 	}
 
-	// Create a custom token using Firebase Admin SDK
-	app, err := firebase.NewApp(context.Background(), nil)
-	if err != nil {
-		log.Println("Error initializing Firebase Admin SDK:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize Firebase Admin SDK"})
-		return
-	}
-
-	authClient, err := app.Auth(context.Background())
-	if err != nil {
-		log.Println("Error getting Auth client:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get Auth client"})
-		return
-	}
-
 	additionalClaims := map[string]interface{}{
 		"isAdmin": true,
 	}
 
-	customToken, err := authClient.CustomTokenWithClaims(context.Background(), igResponse.UserID, additionalClaims)
+	auth := firebase.GetAuthClient(c)
+
+	customToken, err := auth.CustomTokenWithClaims(context.Background(), strconv.Itoa(igResponse.UserID), additionalClaims)
 	if err != nil {
 		log.Println("Error creating custom token:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create custom token"})

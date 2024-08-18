@@ -6,5 +6,5 @@ import (
 )
 
 func setupAuthRoute(r *gin.Engine) {
-	r.POST("/auth", handler.Auth)
+	r.GET("/auth", handler.Auth)
 }
