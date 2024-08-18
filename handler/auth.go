@@ -2,8 +2,10 @@ package handler
 
 import (
 	"cafeteller-api/firebase"
+	"cafeteller-api/instagram"
 	"context"
 	"encoding/json"
+	firebaseAuth "firebase.google.com/go/auth"
 	"github.com/gin-gonic/gin"
 	"io"
 	"log"
@@ -21,6 +23,8 @@ type InstagramResponse struct {
 }
 
 func Auth(c *gin.Context) {
+	ctx := context.Background()
+
 	code := c.Query("code")
 	if code == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Code is required"})
@@ -85,8 +89,9 @@ func Auth(c *gin.Context) {
 	}
 
 	auth := firebase.GetAuthClient(c)
+	userID := strconv.Itoa(igResponse.UserID)
 
-	customToken, err := auth.CustomTokenWithClaims(context.Background(), strconv.Itoa(igResponse.UserID), additionalClaims)
+	customToken, err := auth.CustomTokenWithClaims(context.Background(), userID, additionalClaims)
 	if err != nil {
 		log.Println("Error creating custom token:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create custom token"})
@@ -122,8 +127,25 @@ func Auth(c *gin.Context) {
 		return
 	}
 
+	profile, err := instagram.GetMe(longTokenCredential["access_token"].(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get Instagram profile"})
+		return
+	}
+
+	// Prepare the update parameters
+	update := &firebaseAuth.UserToUpdate{}
+	params := update.DisplayName(profile.Username)
+
+	// Update the user's display name
+	if _, err := auth.UpdateUser(ctx, userID, params); err != nil {
+		log.Fatalf("error updating user %s: %v\n", userID, err)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"credential":  longTokenCredential,
+		"credential": gin.H{
+			"access_token": customToken,
+		},
 		"customToken": customToken,
 	})
 }
