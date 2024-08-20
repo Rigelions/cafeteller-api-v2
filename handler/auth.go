@@ -22,6 +22,10 @@ type InstagramResponse struct {
 	Permission  []string `json:"permissions"`
 }
 
+type SetAdminRequest struct {
+	ID string `json:"id"`
+}
+
 func Auth(c *gin.Context) {
 	ctx := context.Background()
 
@@ -84,14 +88,10 @@ func Auth(c *gin.Context) {
 		return
 	}
 
-	additionalClaims := map[string]interface{}{
-		"isAdmin": true,
-	}
-
 	auth := firebase.GetAuthClient(c)
 	userID := strconv.Itoa(igResponse.UserID)
 
-	customToken, err := auth.CustomTokenWithClaims(context.Background(), userID, additionalClaims)
+	customToken, err := auth.CustomToken(context.Background(), userID)
 	if err != nil {
 		log.Println("Error creating custom token:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create custom token"})
@@ -148,4 +148,27 @@ func Auth(c *gin.Context) {
 		},
 		"customToken": customToken,
 	})
+}
+
+func SetAdmin(c *gin.Context) {
+	ctx := context.Background()
+
+	auth := firebase.GetAuthClient(c)
+	// Get ID from post json body
+	var body SetAdminRequest
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+		return
+	}
+
+	userID := body.ID
+
+	println("ID", userID)
+	params := (&firebaseAuth.UserToUpdate{}).CustomClaims(map[string]interface{}{"isAdmin": true})
+	if _, err := auth.UpdateUser(ctx, userID, params); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to set user as admin"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User is now an admin"})
 }

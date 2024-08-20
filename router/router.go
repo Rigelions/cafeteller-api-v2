@@ -20,6 +20,7 @@ func RegisterRoutes(r *gin.Engine) {
 
 	setupReviewRoute(r)
 	setupAuthRoute(r)
+	setupMediaRoute(r)
 }
 
 func SetupRouter() *gin.Engine {
@@ -28,7 +29,7 @@ func SetupRouter() *gin.Engine {
 	config := cors.Config{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		AllowCredentials: true,
 	}
 	r.Use(cors.New(config))

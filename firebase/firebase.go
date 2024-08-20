@@ -5,6 +5,7 @@ import (
 	"context"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
+	"firebase.google.com/go/storage"
 	"google.golang.org/api/option"
 	"log"
 	"os"
@@ -13,6 +14,7 @@ import (
 // FirestoreClient is a global Firestore client
 var FirestoreClient *firestore.Client
 var AuthClient *auth.Client
+var StorageClient *storage.Client
 
 // InitializeFirebase initializes the Firebase app and Firestore client
 func InitializeFirebase() {
@@ -38,6 +40,12 @@ func InitializeFirebase() {
 		log.Fatalln("Error initializing Firestore client:", err)
 	}
 	FirestoreClient = client
+
+	storageClient, err := app.Storage(ctx)
+	if err != nil {
+		log.Fatalln("Error initializing Storage client:", err)
+	}
+	StorageClient = storageClient
 }
 
 // CloseFirestoreClient closes the Firestore client
