@@ -26,7 +26,16 @@ type SetAdminRequest struct {
 	ID string `json:"id"`
 }
 
-func Auth(c *gin.Context) {
+func AuthRemote(c *gin.Context) {
+	redirectURI := os.Getenv("INSTAGRAM_REDIRECT_URI")
+	Auth(c, redirectURI)
+}
+func AuthLocal(c *gin.Context) {
+	redirectURI := os.Getenv("INSTAGRAM_LOCAL_REDIRECT_URI")
+	Auth(c, redirectURI)
+}
+
+func Auth(c *gin.Context, redirectURI string) {
 	ctx := context.Background()
 
 	code := c.Query("code")
@@ -37,7 +46,7 @@ func Auth(c *gin.Context) {
 
 	appSecret := os.Getenv("INSTAGRAM_APP_SECRET")
 	appID := os.Getenv("INSTAGRAM_APP_ID")
-	redirectURI := os.Getenv("INSTAGRAM_REDIRECT_URI")
+
 	if appSecret == "" || appID == "" || redirectURI == "" {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Instagram App is not configured"})
 		return
