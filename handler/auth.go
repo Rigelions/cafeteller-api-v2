@@ -153,7 +153,7 @@ func Auth(c *gin.Context, redirectURI string) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"credential": gin.H{
-			"access_token": customToken,
+			"access_token": longTokenCredential["access_token"],
 		},
 		"customToken": customToken,
 	})
