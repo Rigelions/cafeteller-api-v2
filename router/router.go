@@ -28,7 +28,7 @@ func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
 	config := cors.Config{
-		AllowOrigins:     []string{"https://tunnel.cafeteller.club", "https://cafeteller.club", "http://localhost:3000", "https://dev.cafeteller.club"},
+		AllowOrigins:     []string{"https://tunnel.cafeteller.club", "https://cafeteller.club", "http://localhost:3000", "https://dev.cafeteller.club", "https://pre-production.cafeteller.club"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		AllowCredentials: true,
