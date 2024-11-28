@@ -6,6 +6,11 @@ on:
       - develop
     paths-ignore:
       - .github/**
+env:
+  PROJECT_ID: ${{ secrets.DEV_PROJECT_ID }}
+  REGION: ${{ secrets.GAR_REGION }}
+  WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+  IMAGE_NAME: cafeteller/api
 
 jobs:
   build:
@@ -25,7 +30,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t cafeteller/api:latest .
+          docker build -t ${{ env.IMAGE_NAME }}:latest .
 
       # Step 4: Push Docker image to Amazon ECR
       - name: Tag Docker image
