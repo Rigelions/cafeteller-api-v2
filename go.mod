@@ -1,6 +1,6 @@
 module cafeteller-api
 
-go 1.22
+go 1.20
 
 require (
 	cloud.google.com/go/firestore v1.16.0

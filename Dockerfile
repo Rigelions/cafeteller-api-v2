@@ -1,29 +1,40 @@
-# Stage 1: Build
-FROM golang:1.22 AS builder
+FROM golang:1.20-alpine AS builder
 
-# Set the working directory inside the container
+# Install build dependencies
+RUN apk add --no-cache build-base libwebp-dev
+
+# Set the working directory
 WORKDIR /app
 
-# Copy the application source code
-COPY . .
+# Copy the Go modules manifests
+COPY go.mod go.sum ./
 
 # Download dependencies
-RUN go mod download
+RUN GO111MODULE=on go mod download
+
+# Copy the entire source code
+COPY . .
+
+# Set the command directory
+WORKDIR /app
 
 # Build the Go application
-RUN go build -o main .
+RUN GO111MODULE=on go mod tidy && go build -o /main ./cmd/main.go
 
-# Stage 2: Run
+# Use a minimal image for the runtime
 FROM alpine:latest
 
-# Set the working directory inside the container
+# Install runtime dependencies
+RUN apk add --no-cache libwebp
+
+# Set the working directory
 WORKDIR /root/
 
-# Copy the built binary from the builder stage
-COPY --from=builder /app/main .
+# Copy the binary from the builder stage
+COPY --from=builder /main .
 
-# Expose the application port (update if your app uses a different port)
+# Expose the application port
 EXPOSE 8080
 
-# Command to run the application
+# Command to run the executable
 CMD ["./main"]

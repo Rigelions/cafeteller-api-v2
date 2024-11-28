@@ -1,7 +1,0 @@
-runtime: go122
-
-service: api-v2
-
-main: ./cmd
-
-app_engine_apis: true
