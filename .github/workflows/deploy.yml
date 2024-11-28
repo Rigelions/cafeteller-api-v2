@@ -41,6 +41,10 @@ jobs:
         run: |
           docker tag cafeteller/api:latest asia-southeast1-docker.pkg.dev/cafeteller-f18b8/api/cafeteller/api:latest
 
+      - name: Configure Docker for Google Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
       - name: Push Docker image to Artifact Registry
         run: |
-          docker push asia-southeast1-docker.pkg.dev/cafeteller-f18b8/api/cafeteller/api:latest
+          docker push ${{ env.REGION }}-docker.pkg.dev/cafeteller-f18b8/api/cafeteller/api:latest
