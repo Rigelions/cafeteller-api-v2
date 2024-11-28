@@ -1,0 +1,80 @@
+name: Deploy to App Engine on merge
+'on':
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Install App Engine Go component
+        run: |
+          gcloud components install app-engine-go
+          gcloud components update
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.4'
+
+      - name: Install Go dependencies
+        run: |
+          go mod tidy
+
+      - name: Write Admin Service Account (main)
+        if: github.ref == 'refs/heads/main'
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets.ADMIN_SERVICE_ACCOUNT }}
+        run: |
+          mkdir server
+          echo "$SERVICE_ACCOUNT_JSON" >> ./service-account-key.json
+
+      - name: Write Admin Service Account (develop)
+        if: github.ref == 'refs/heads/develop'
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets.ADMIN_SERVICE_ACCOUNT_DEV }}
+        run:
+          echo "$SERVICE_ACCOUNT_JSON" >> ./service-account-key.json
+
+      - name: Write .env file (main)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.ENV_PROD }}" >> .env
+          echo "COMMIT_HASH=${{ github.sha }}" >> .env
+
+      - name: Write .env file (develop)
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          echo "${{ secrets.ENV_DEV }}" >> .env
+          echo "COMMIT_HASH=${{ github.sha }}" >> .env
+
+      - uses: 'google-github-actions/auth@v2'
+        if: github.ref == 'refs/heads/main'
+        with:
+          credentials_json: ${{ secrets.SERVICE_ACCOUNT_PROD }}
+
+      - name: Deploy to App Engine (main)
+        if: github.ref == 'refs/heads/main'
+        uses: google-github-actions/deploy-appengine@v2
+        with:
+          deliverables: app.yaml
+          project_id: cafeteller-f18b8
+
+      - uses: 'google-github-actions/auth@v2'
+        if: github.ref == 'refs/heads/develop'
+        with:
+          credentials_json: ${{ secrets.SERVICE_ACCOUNT_DEV }}
+
+      - name: Deploy to App Engine (develop)
+        if: github.ref == 'refs/heads/develop'
+        uses: google-github-actions/deploy-appengine@v2
+        with:
+          deliverables: app.yaml
+          project_id: cafeteller-dev
