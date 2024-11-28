@@ -1,0 +1,84 @@
+name: Copy Image to Google Artifact Registry
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+' # Trigger only on tags like v0.1.0
+
+env:
+  PROJECT_ID: ${{ secrets.PROD_PROJECT_ID }}
+  REGION: ${{ secrets.GAR_REGION }}
+  WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+  IMAGE_NAME: cafeteller/api
+
+
+jobs:
+  copy-image-to-prod:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: '${{ env.WORKLOAD_IDENTITY_PROVIDER }}'
+          service_account: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
+
+      # Step 5: Pull the latest image from Amazon ECR
+      - name: Pull Docker Image from Amazon ECR
+        run: |
+          docker pull ${{ env.REGION }}-docker.pkg.dev/cafeteller-f18b8/api/${{ env.IMAGE_NAME }}:latest
+
+      # Step 7: Configure Docker for Google Artifact Registry
+      - name: Configure Docker for Google Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      # Step 8: Tag and Push Image to Google Artifact Registry
+      - name: Tag and Push Docker Image to Google Artifact Registry
+        run: |
+          TAG=${{ github.ref_name }}
+          GAR_REPO="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/api"
+          docker tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/api/${{ env.IMAGE_NAME }}:latest ${GAR_REPO}/${{ env.IMAGE_NAME }}:${TAG}
+          docker tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/api/${{ env.IMAGE_NAME }}:latest ${GAR_REPO}/${{ env.IMAGE_NAME }}:latest
+          docker push ${GAR_REPO}/${{ env.IMAGE_NAME }}:${TAG}
+          docker push ${GAR_REPO}/${{ env.IMAGE_NAME }}:latest
+
+  trigger-deployment:
+    runs-on: ubuntu-latest
+    needs: copy-image-to-prod
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      # Step 2: Trigger deployment in CKC repo
+      - name: Trigger deployment in kustomization config repo
+        run: |
+          # Set the absolute path to the .github directory
+          GITHUB_DIR="$GITHUB_WORKSPACE/.github"
+          
+          # Check if the deployment_payload.json file exists
+          if [ ! -f "$GITHUB_DIR/deployment_payload.json" ]; then
+          echo "Error: deployment_payload.json does not exist in $GITHUB_DIR"
+            exit 1
+          fi
+          
+          # Replace GitHub variables in the JSON file and overwrite it
+          jq '.client_payload.image_tag = "${{ github.ref_name }}"' "$GITHUB_DIR/deployment_payload.json" > "$GITHUB_DIR/deployment_payload_temp.json"
+          
+          # Move the temporary JSON file to replace the original
+          mv "$GITHUB_DIR/deployment_payload_temp.json" "$GITHUB_DIR/deployment_payload.json"
+          
+          # Trigger the GitHub Actions deployment
+          curl -X POST https://api.github.com/repos/Rigelions/cafeteller-k8s-config/dispatches \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_TOKEN }}" \
+            -d @"$GITHUB_DIR/deployment_payload.json"
