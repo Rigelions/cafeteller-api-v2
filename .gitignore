@@ -27,7 +27,7 @@
 Thumbs.db
 
 # env file
-.env
+.env.what
 
 service-account-key.json
 

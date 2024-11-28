@@ -1,0 +1,10 @@
+{
+  "event_type": "trigger-deployment",
+  "client_payload": {
+    "env": "prod",
+    "image_tag": "${{ github.ref_name }}",
+    "image_name": "cafeteller/api",
+    "app_name": "api",
+    "gar_repo_name": "api"
+  }
+}
