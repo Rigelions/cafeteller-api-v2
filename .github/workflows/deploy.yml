@@ -4,8 +4,7 @@ on:
     branches:
       - main
       - develop
-    paths-ignore:
-      - .github/**
+
 env:
   PROJECT_ID: ${{ secrets.DEV_PROJECT_ID }}
   REGION: ${{ secrets.GAR_REGION }}
@@ -16,6 +15,11 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
