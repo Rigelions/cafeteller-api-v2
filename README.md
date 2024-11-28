@@ -6,6 +6,8 @@ Cafeteller is a review blog platform for coffee enthusiasts, powered by a robust
 
 - Comprehensive coffee reviews
 - Review submission and moderation
+- Get Reviews
+- Get Reviews by ID
 
 ## Getting Started
 
