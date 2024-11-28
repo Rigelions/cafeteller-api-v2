@@ -19,7 +19,7 @@ COPY . .
 WORKDIR /app
 
 # Build the Go application
-RUN GO111MODULE=on go mod tidy && go build -o /main ./cmd/main.go
+RUN GO111MODULE=on go build -o /main ./cmd/main.go
 
 # Use a minimal image for the runtime
 FROM alpine:latest
