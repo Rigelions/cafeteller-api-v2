@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func setupCafeRoute(r *gin.Engine) {
+func setupCafeRoute(r *gin.RouterGroup) {
 	r.GET("/cafe", handler.GetReviews)
 	r.POST("/cafe/migrate", handler.MigrateCafeNamesToLowercase)
 }

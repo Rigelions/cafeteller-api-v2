@@ -40,6 +40,7 @@ jobs:
       - name: Tag Docker image
         run: |
           docker tag cafeteller/api:latest asia-southeast1-docker.pkg.dev/cafeteller-f18b8/api/cafeteller/api:latest
+          docker tag cafeteller/api:latest asia-southeast1-docker.pkg.dev/cafeteller-f18b8/api/cafeteller/api:v0.1.0
 
       - name: Configure Docker for Google Artifact Registry
         run: |

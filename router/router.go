@@ -11,24 +11,24 @@ import (
 	"github.com/didip/tollbooth_gin"
 )
 
-func RegisterRoutes(r *gin.Engine) {
-	r.GET("/health", handler.HealthCheck)
+func RegisterRoutes(api *gin.RouterGroup) {
+	api.GET("/health", handler.HealthCheck)
 
-	r.GET("/banner", handler.GetRecommendReviews)
+	api.GET("/banner", handler.GetRecommendReviews)
 
-	r.GET("/get-similar-cafe", handler.GetSimilarCafe)
+	api.GET("/get-similar-cafe", handler.GetSimilarCafe)
 
-	setupReviewRoute(r)
-	setupAuthRoute(r)
-	setupMediaRoute(r)
-	setupCafeRoute(r)
+	setupReviewRoute(api)
+	setupAuthRoute(api)
+	setupMediaRoute(api)
+	setupCafeRoute(api)
 }
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
 	config := cors.Config{
-		AllowOrigins:     []string{"https://tunnel.cafeteller.club", "https://cafeteller.club", "http://localhost:3000", "https://dev.cafeteller.club", "https://pre-production.cafeteller.club"},
+		AllowOrigins:     []string{"https://tunnel.cafeteller.club", "http://localhost:3000", "https://dev.cafeteller.club"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		AllowCredentials: true,
@@ -40,6 +40,8 @@ func SetupRouter() *gin.Engine {
 	// Apply the rate limiter middleware to the router
 	r.Use(tollbooth_gin.LimitHandler(limiter))
 
-	RegisterRoutes(r)
+	// Add /api prefix
+	api := r.Group("/api")
+	RegisterRoutes(api)
 	return r
 }

@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func setupReviewRoute(r *gin.Engine) {
+func setupReviewRoute(r *gin.RouterGroup) {
 	r.GET("/reviews", handler.GetReviews)
 	r.GET("/reviews/:id", handler.GetReviewByID)
 }

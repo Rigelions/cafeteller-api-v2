@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func setupAuthRoute(r *gin.Engine) {
+func setupAuthRoute(r *gin.RouterGroup) {
 	env := os.Getenv("GO_ENV")
 
 	if env == "development" {

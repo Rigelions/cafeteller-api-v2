@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func setupMediaRoute(r *gin.Engine) {
+func setupMediaRoute(r *gin.RouterGroup) {
 	r.POST("/media/ig/upload", middlewares.AuthMiddleware(true), handler.HandleUploadURL)
 	r.POST("/media/image/upload", middlewares.AuthMiddleware(true), handler.HandleUploadAndConvertToWebP)
 }
