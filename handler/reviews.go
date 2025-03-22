@@ -37,7 +37,11 @@ func GetReviewByID(c *gin.Context) {
 		return
 	}
 
-	data["cafe"] = cafe_snap.Data()
+	// Add ID to the cafe data
+	cafeData := cafe_snap.Data()
+	cafeData["id"] = cafe_snap.Ref.ID
+
+	data["cafe"] = cafeData
 
 	c.JSON(http.StatusOK, data)
 }
